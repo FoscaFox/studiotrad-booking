@@ -383,6 +383,8 @@
   let pending = null;
 
   const MAX_BOOKING_DAYS = 7; // harde limiet per boeking (client én server)
+  // Gedeeld geheim met de Apps Script-web-app: filtert directe script-POSTs naar de endpoint.
+  const BOOKING_TOKEN = "9da0732067ee4e043d7d0feac331a8e8b118d1aa53170cd3";
 
   function submitBooking(e) {
     e.preventDefault();
@@ -496,6 +498,7 @@
     params.append("email", pending.email); params.append("phone", pending.phone);
     params.append("msg", pending.msg || "-");
     params.append("website", (document.getElementById("f_website").value || "").trim());
+    params.append("token", BOOKING_TOKEN);
     params.append("days", JSON.stringify(dayObjs));
 
     btn.disabled = true; btn.textContent = "Versturen…";
@@ -538,8 +541,6 @@
   render();
 
   // ===== LIVE BESCHIKBAARHEID =====
-  // haalt de verse, door de studio berekende beschikbaarheid op (regel-gebaseerd,
-  // 2x per dag ververst). De ingebakken fallback hierboven geldt alleen als dit mislukt.
   fetch("availability.json?t=" + Date.now())
     .then(r => r.json())
     .then(data => {
