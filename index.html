@@ -1,0 +1,528 @@
+
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>STUDIO TRAD — Boek een opnamedag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Studio Trad huisstijl v2 (Instagram-vibe): warm antraciet + warme beige/goud tinten */
+    --bg: #1B1815;        /* warm antraciet (bruinig zwart) */
+    --panel: #241F1B;     /* warm donkerbruin paneel */
+    --panel2: #2C2621;    /* iets lichter warm paneel */
+    --text: #EDE4D6;      /* warm beige (site: 237,237,228 → donkervariant) */
+    --muted: #A69B8C;     /* warm grijs-beige (96,94,94 → licht) */
+    --accent: #F2C14E;    /* warm goud/amber */
+    --accent-text: #221A08;
+    --ok: #8FBF7A;        /* zacht bladgroen */
+    --alt: #7FA8D0;       /* zacht blauwgrijs */
+    --border: #3A332C;
+    font-family: Barlow, "Open Sans", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 28px 18px 60px; }
+  h1 { font-family: Anton, Barlow, sans-serif; font-weight: 400; font-size: 2rem; margin: 0 0 4px; letter-spacing: 0.03em; text-transform: uppercase; }
+  .sub { color: var(--muted); margin: 0 0 24px; font-size: 0.95rem; }
+  .panels { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 760px) { .panels { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .card h2 { font-family: Anton, Barlow, sans-serif; font-weight: 400; font-size: 1rem; margin: 0 0 12px; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .monthnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .monthnav button { background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 0.95rem; font-family: inherit; }
+  .monthnav button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .monthnav button:disabled { opacity: 0.35; cursor: default; }
+  #monthLabel { font-weight: 600; letter-spacing: 0.02em; }
+
+  table.cal { width: 100%; border-collapse: collapse; }
+  table.cal th { color: var(--muted); font-weight: 600; font-size: 0.75rem; padding: 6px 0; text-transform: uppercase; letter-spacing: 0.08em; }
+  table.cal td { text-align: center; padding: 3px; }
+  .day { width: 100%; aspect-ratio: 1; border-radius: 10px; border: 1px solid var(--border); background: var(--panel2); color: var(--muted); font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: default; font-family: inherit; }
+  .day.full { background: rgba(143, 191, 122, 0.12); border-color: rgba(143, 191, 122, 0.5); color: var(--ok); cursor: pointer; font-weight: 600; }
+  .day.full:hover { background: rgba(143, 191, 122, 0.24); }
+  .day.restricted { background: rgba(127, 168, 208, 0.12); border-color: rgba(127, 168, 208, 0.5); color: var(--alt); cursor: pointer; font-weight: 600; }
+  .day.restricted:hover { background: rgba(127, 168, 208, 0.22); }
+  .day.half { background: rgba(242, 193, 78, 0.12); border-color: rgba(242, 193, 78, 0.5); color: var(--accent); cursor: pointer; font-weight: 600; }
+  .day.half:hover { background: rgba(242, 193, 78, 0.22); }
+  .day.wed3 { background: rgba(192, 132, 252, 0.12); border-color: rgba(192, 132, 252, 0.5); color: #C7A2F5; cursor: pointer; font-weight: 600; }
+  .day.wed3:hover { background: rgba(192, 132, 252, 0.22); }
+  .day.schoolfree { background: rgba(94, 215, 195, 0.12); border-color: rgba(94, 215, 195, 0.5); color: #5ED7C3; cursor: pointer; font-weight: 600; }
+  .day.schoolfree:hover { background: rgba(94, 215, 195, 0.22); }
+  .day.selected { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .day .dot { width: 5px; height: 5px; border-radius: 50%; }
+  .day.full .dot { background: var(--ok); }
+  .day.restricted .dot { background: var(--alt); }
+  .day.off { opacity: 0.25; }
+
+  .legend { display: flex; gap: 14px; margin-top: 12px; font-size: 0.78rem; color: var(--muted); flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+
+  .selection { background: rgba(242, 193, 78, 0.08); border: 1px solid rgba(242, 193, 78, 0.35); border-radius: 10px; padding: 10px 12px; font-size: 0.9rem; margin-bottom: 14px; color: var(--muted); }
+  .selection strong { color: var(--text); }
+
+  label { display: block; font-size: 0.8rem; color: var(--muted); margin: 10px 0 4px; letter-spacing: 0.03em; text-transform: uppercase; font-weight: 600; }
+  input, textarea, select { width: 100%; background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; font-size: 0.95rem; font-family: inherit; }
+  input:focus, textarea:focus, select:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+  textarea { min-height: 80px; resize: vertical; }
+
+  .btn { width: 100%; margin-top: 16px; background: var(--accent); color: var(--accent-text); border: none; border-radius: 10px; padding: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit; letter-spacing: 0.03em; }
+  .btn:hover:not(:disabled) { background: #F7D06B; }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+
+  .notice { background: rgba(242, 193, 78, 0.1); border: 1px solid rgba(242, 193, 78, 0.4); border-radius: 10px; padding: 12px 14px; font-size: 0.85rem; margin-bottom: 16px; color: var(--text); }
+  .notice strong { color: var(--accent); }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ok); color: #FDFBF4; padding: 12px 22px; border-radius: 8px; font-weight: 600; display: none; box-shadow: 0 8px 30px rgba(47,46,46,0.35); }
+  .rules { margin-top: 26px; color: var(--muted); font-size: 0.82rem; line-height: 1.6; border-top: 1px solid var(--border); padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>STUDIO TRAD — Opnamedagen</h1>
+  <p class="sub">Kies een vrije dag om een opnamesessie te boeken. Beschikbaarheid komt direct uit de studioplanning.</p>
+
+  <div id="sampleNotice" class="notice"><strong>Beschikbaarheid:</strong> actueel tot en met november 2028, gegenereerd op 22 november 2026 uit de studiokalenders. Hoe verder de datum, hoe indicatiever — dagen zijn pas vast na bevestiging door de studio.</div>
+
+  <div class="panels">
+    <div class="card">
+      <h2>Beschikbare dagen</h2>
+      <div class="monthnav">
+        <button id="prevBtn" onclick="changeMonth(-1)">&larr;</button>
+        <span id="monthLabel"></span>
+        <button id="nextBtn" onclick="changeMonth(1)">&rarr;</button>
+      </div>
+      <table class="cal">
+        <thead><tr><th>ma</th><th>di</th><th>wo</th><th>do</th><th>vr</th><th>za</th><th>zo</th></tr></thead>
+        <tbody id="calBody"></tbody>
+      </table>
+      <div class="legend">
+        <span><span class="swatch" style="background:rgba(143,191,122,0.3);border:1px solid rgba(143,191,122,0.6)"></span> Volledige dag (09:00–17:00)</span>
+        <span><span class="swatch" style="background:rgba(242,193,78,0.3);border:1px solid rgba(242,193,78,0.6)"></span> Halve dag (uren vermeld)</span>
+        <span><span class="swatch" style="background:rgba(192,132,252,0.3);border:1px solid rgba(192,132,252,0.6)"></span> Woensdag — enkel in 3-daags blok</span>
+        <span><span class="swatch" style="background:rgba(94,215,195,0.3);border:1px solid rgba(94,215,195,0.6)"></span> Schoolvrije dag — enkel als optie</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Uw boeking</h2>
+      <div class="selection" id="selectionBox">Nog geen dagen gekozen — klik links op een of meer groene/blauwe dagen.</div>
+      <div class="notice" id="wedRuleWarn" style="display:none"><strong>Woensdag:</strong> woensdag is alleen te boeken als onderdeel van een blok van minimaal 3 dagen in dezelfde week. Kies eerst (of ook) minimaal 2 andere dagen in die week, of klik de woensdag weg.</div>
+      <div class="notice" id="splitWarn" style="display:none"><strong>Onderbroken blok:</strong> tussen de gekozen dagen staat al een andere opname gepland. Kies dagen die aansluiten (zonder geplande opnames ertussen), of haal dagen weg tot het blok weer sluit.</div>
+      <form id="bookForm" onsubmit="submitBooking(event)">
+        <label for="f_name">Naam *</label>
+        <input id="f_name" required />
+        <label for="f_band">Band / project</label>
+        <input id="f_band" />
+        <label for="f_email">E-mail *</label>
+        <input id="f_email" type="email" required />
+        <label for="f_phone">Telefoon</label>
+        <input id="f_phone" type="tel" />
+        <label for="f_msg">Waarover nemen we op? (bezetting, aantal nummers, timing…)</label>
+        <textarea id="f_msg"></textarea>
+        <button class="btn" id="submitBtn" type="submit" disabled>Naar overzicht →</button>
+      </form>
+      <div id="reviewBox" class="card" style="display:none;margin-top:14px">
+        <h2>Controleer jouw boeking</h2>
+        <div class="selection" style="color:var(--text)">
+          <strong>Gekozen dag(en):</strong>
+          <ul id="reviewDays" style="margin:6px 0 0;padding-left:18px"></ul>
+        </div>
+        <p id="reviewContact" style="font-size:0.9rem;color:var(--muted);margin:12px 0 0"></p>
+        <p style="font-size:0.83rem;color:var(--muted);margin:10px 0 0">Klik op <strong>Bevestig boeking</strong> om je aanvraag definitief te versturen. Je boeking geldt daarna als optie tot de studio ze bevestigt; je krijgt direct een overzicht per e-mail.</p>
+        <button class="btn" id="confirmBtn" type="button" onclick="confirmBooking()">Bevestig boeking</button>
+        <button id="backBtn" type="button" onclick="backToForm()" style="width:100%;margin-top:8px;background:none;border:none;color:var(--muted);font-size:0.85rem;cursor:pointer;text-decoration:underline;padding:6px">&larr; Terug naar het formulier</button>
+      </div>
+      <div id="confirmBox" class="card" style="display:none;border-color:rgba(143,191,122,0.5);background:rgba(143,191,122,0.06);margin-top:14px">
+        <h2 style="border-bottom-color:var(--ok);color:var(--ok)">Boeking ontvangen</h2>
+        <p style="margin:0 0 6px">Jouw aanvraag is geregistreerd als <strong>optie</strong> voor:</p>
+        <ul id="confirmDays" style="margin:6px 0 10px;padding-left:18px"></ul>
+        <p style="margin:0;font-size:0.9rem;color:var(--muted)">Een bevestiging is verstuurd naar <strong id="confirmEmail"></strong>. De studio neemt contact op om de boeking definitief te maken.</p>
+      </div>
+      <p class="rules">
+        Opnamedagen lopen van 09:00 tot 17:00; dagen met beperkte uren staan erbij. U kunt meerdere dagen kiezen, maar <strong>alleen als ze een aaneengesloten blok vormen: tussen de eerste en laatste dag van uw boeking mag geen andere opname gepland staan.</strong> <strong>Woensdag is alleen beschikbaar als onderdeel van een blok van minimaal 3 dagen in dezelfde week.</strong> <strong>Turquoise dagen zijn schoolvrije dagen (vakanties en vrije schooldagen): aanvragen daarvoor gelden als optie.</strong> Na het versturen geldt uw aanvraag als <strong>optie</strong> — de boeking is pas definitief na bevestiging door de studio.
+      </p>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ================= CONFIGURATIE =================
+     STUDIO_CONFIG wordt hier aangepast (door Vibe bij de wekelijkse verversing):
+     - emailadres waar boekingen binnenkomen
+     - availability: lijst met { date: "YYYY-MM-DD", type: "full" | "restricted" }
+     - data.psychisch etc. niet nodig; alleen de twee velden hierboven.
+  ================================================ */
+  const STUDIO_CONFIG = {
+    bookingEmail: "jeroen@studiotrad.be",
+    webAppUrl: "https://script.google.com/macros/s/AKfycbwnhh0cae2076D270VUB5NLw2eClFS4QzoTePV6bZHat4LGwPvIrQfW4xNuX8Jd5b8z/exec", // Apps Script web-app "boeking v4" (22 nov 2026)
+    // Beschikbaarheid werkt OMGEKEERD: elke weekdag (ma–vr) t/m de horizon is boekbaar,
+    // TENOZIJ de dag voorkomt in recDays of blockedDays, of binnen een vacation-periode valt.
+    // halfDays: boekbaar voor de vermelde uren. Woensdagen = "wed3": alleen geldig als
+    // onderdeel van een blok van minimaal 3 dagen in dezelfde week (kinderopvang uitzondering).
+    // Horizon: t/m november 2028. Gegenereerd op 22 nov 2026 (2-jaarsscan van alle agenda's);
+    // bij de wekelijkse verversing worden deze lijsten opnieuw gevuld.
+    recDays: ["2026-11-24","2026-11-30","2026-12-03","2026-12-04","2026-12-07","2026-12-10","2026-12-11","2026-12-12","2026-12-13","2026-12-14","2026-12-18","2027-01-05","2027-01-06","2027-01-07","2027-01-08","2027-01-11","2027-01-12","2027-01-13","2027-01-14","2027-01-15","2027-01-16","2027-01-17","2027-01-19","2027-01-21","2027-01-25","2027-01-26","2027-01-27","2027-01-29","2027-02-01","2027-02-02","2027-02-03","2027-02-04","2027-02-05","2027-02-21","2027-02-22","2027-03-02","2027-03-03","2027-03-04","2027-03-09","2027-03-13","2027-03-14","2027-03-24","2027-03-25","2027-03-26","2027-04-05","2027-04-06","2027-04-07","2027-04-08","2027-04-09","2027-04-12","2027-04-13","2027-04-15","2027-04-16","2027-06-01","2027-06-03","2027-06-04","2027-06-07","2027-07-17","2027-07-18","2027-07-19","2027-07-20","2027-07-21","2027-07-22","2027-10-18","2027-10-19","2027-10-20","2027-10-21","2027-10-22"],
+    vacations: [], // (vervallen als blokkade: schoolvrije dagen zijn nu OPTIE-boekbaar, zie schoolFree)
+    neverBookable: [ // vakantieperiodes die NOOIT boekbaar zijn (niet eens als optie)
+      { from: "2026-12-21", to: "2027-01-04", title: "kerstvakantie" },
+      { from: "2027-11-01", to: "2027-11-08", title: "herfstvakantie" },
+      { from: "2027-12-27", to: "2028-01-10", title: "kerstvakantie" }
+    ],
+    schoolFree: [
+      { from: "2027-02-08", to: "2027-02-15", title: "krokusvakantie" },
+      { from: "2027-03-29", to: "2027-04-12", title: "paasvakantie" },
+      { from: "2027-05-06", to: "2027-05-08", title: "hemelvaart + brugdag" },
+      { from: "2027-05-17", to: "2027-05-18", title: "pinkstermaandag" },
+      { from: "2027-07-01", to: "2027-09-01", title: "zomervakantie" },
+      { from: "2027-11-11", to: "2027-11-12", title: "wapenstilstand" },
+      { from: "2028-02-28", to: "2028-03-06", title: "krokusvakantie" },
+      { from: "2028-04-03", to: "2028-04-18", title: "paasvakantie" },
+      { from: "2028-05-01", to: "2028-05-02", title: "dag van de arbeid" },
+      { from: "2028-05-25", to: "2028-05-27", title: "hemelvaart + brugdag" },
+      { from: "2028-06-05", to: "2028-06-06", title: "pinkstermaandag" },
+      { from: "2028-07-01", to: "2028-09-01", title: "zomervakantie" }
+    ],
+    blockedDays: ["2026-11-27","2026-12-11","2026-12-14","2026-12-15","2026-12-16","2026-12-25","2026-12-27","2026-12-28","2026-12-29","2026-12-30","2026-12-31","2027-01-01","2027-01-14","2027-01-22","2027-01-25","2027-01-28","2027-01-30","2027-01-31","2027-02-01","2027-02-03","2027-02-05","2027-02-18","2027-02-19","2027-02-27","2027-02-28","2027-04-03","2027-04-04","2027-04-05","2027-04-06","2027-04-07","2027-04-08","2027-04-09","2027-04-10","2027-04-11","2027-04-22","2027-04-23","2027-04-24","2027-04-25","2027-04-28","2027-05-01","2027-05-02","2027-05-14","2027-06-17","2027-06-18","2027-06-19","2027-06-20","2027-06-28","2027-06-29","2027-06-30","2027-07-02","2027-07-05","2027-07-19","2027-07-23","2027-07-24","2027-07-25","2027-07-26","2027-07-27","2027-07-28","2027-07-29","2027-07-30","2027-07-31","2027-08-05","2027-08-09","2027-08-18","2027-08-19","2027-08-20","2027-08-21","2027-08-22","2027-08-24","2027-08-25","2027-08-26","2027-08-27","2027-08-28","2027-10-08","2027-10-09","2027-10-10","2027-10-18","2027-10-19","2027-10-20","2027-10-21","2027-10-22","2027-11-18","2027-11-19","2027-11-20","2027-11-21","2028-06-28","2028-06-29","2028-06-30"],
+    halfDays: [
+      { date: "2027-01-22", hours: "09:00–13:30" },
+      { date: "2027-05-21", hours: "09:00–16:00" },
+      { date: "2027-06-24", hours: "09:00–16:00" },
+      { date: "2027-12-03", hours: "10:00–16:00" },
+      { date: "2028-02-09", hours: "09:00–13:00" },
+      { date: "2028-07-26", hours: "09:15–17:00" }
+    ]
+  };
+  /* ================================================ */
+
+  const MONTHS = ["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
+  let recSet, blockedSet, halfMap;
+  function rebuildConfig() {
+    recSet = new Set(STUDIO_CONFIG.recDays);
+    blockedSet = new Set(STUDIO_CONFIG.blockedDays);
+    const hm = {};
+    STUDIO_CONFIG.halfDays.forEach(h => { hm[h.date] = h.hours; });
+    halfMap = hm;
+  }
+  rebuildConfig();
+  const inSchoolFree = (d) => STUDIO_CONFIG.schoolFree.some(v => d >= v.from && d < v.to);
+  const inNeverBookable = (d) => STUDIO_CONFIG.neverBookable.some(v => d >= v.from && d < v.to);
+  const HORIZON_END = "2028-11-30";
+
+  // Beschikbaarheidslogica (omgekeerd): weekdag, niet geblokkeerd -> boekbaar
+  function dayInfo(d) {
+    if (d > HORIZON_END) return null;
+    const w = iso(d).getDay();
+    if (w === 0 || w === 6) return null; // weekend
+    if (recSet.has(d) || blockedSet.has(d) || inNeverBookable(d)) return null;
+    if (halfMap[d]) return { type: "half", hours: halfMap[d] };
+    if (inSchoolFree(d)) return { type: "schoolfree" }; // schoolvrije dag: boekbaar als optie
+    if (w === 3) return { type: "wed3" }; // woensdag: alleen via 3-daags blok
+    return { type: "full" };
+  }
+  const typeOf = (d) => dayInfo(d)?.type;
+  const hoursOf = (d) => halfMap[d] || "";
+
+  function wednesdaysOk(list) {
+    return list.every(d => !isWednesday(d) || weekCount(d, list) >= 3);
+  }
+  // No-split-regel: between first and last selected day there may be no other planned recordings
+  function splitsOk(list) {
+    if (list.length < 2) return true;
+    const sorted = [...list].sort();
+    const min = sorted[0], max = sorted[sorted.length - 1];
+    return !STUDIO_CONFIG.recDays.some(r => r > min && r < max && !sorted.includes(r));
+  }
+
+  const today = new Date();
+  let cur = new Date(today.getFullYear(), today.getMonth(), 1);
+  const minMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const maxMonth = new Date(today.getFullYear(), today.getMonth() + 24, 1); // horizon: 2 jaar
+
+  let selected = []; // array van geselecteerde datums (YYYY-MM-DD)
+
+  const isWednesday = (dstr) => iso(dstr).getDay() === 3;
+  function weekKey(dstr) {
+    const d = iso(dstr);
+    const dow = (d.getDay() + 6) % 7; // maandag = 0
+    const mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - dow);
+    return mon.getFullYear() + "-" + String(mon.getMonth() + 1).padStart(2, "0") + "-" + String(mon.getDate()).padStart(2, "0");
+  }
+  function weekCount(dstr, list) {
+    const k = weekKey(dstr);
+    return list.filter(d2 => weekKey(d2) === k).length;
+  }
+
+  function iso(d /* YYYY-MM-DD string */) {
+    const [y, m, dd] = d.split("-").map(Number);
+    return new Date(y, m - 1, dd);
+  }
+  function fmt(dstr) {
+    const d = iso(dstr);
+    return d.toLocaleDateString("nl-BE", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+
+  function render() {
+    document.getElementById("monthLabel").textContent =
+      MONTHS[cur.getMonth()] + " " + cur.getFullYear();
+    document.getElementById("prevBtn").disabled = cur <= minMonth;
+    document.getElementById("nextBtn").disabled = cur >= maxMonth;
+
+    const body = document.getElementById("calBody");
+    body.innerHTML = "";
+    const first = new Date(cur.getFullYear(), cur.getMonth(), 1);
+    const daysInMonth = new Date(cur.getFullYear(), cur.getMonth() + 1, 0).getDate();
+    const startCol = (first.getDay() + 6) % 7; // maandag = 0
+    let row = document.createElement("tr");
+    for (let i = 0; i < startCol; i++) row.appendChild(document.createElement("td"));
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dstr = cur.getFullYear() + "-" +
+        String(cur.getMonth() + 1).padStart(2, "0") + "-" +
+        String(day).padStart(2, "0");
+      const td = document.createElement("td");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "day";
+      btn.textContent = day;
+      const type = typeOf(dstr);
+      const past = iso(dstr) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      if (type && !past) {
+        btn.classList.add(type);
+        btn.innerHTML = day + '<span class="dot"></span>';
+        btn.onclick = () => toggleDay(dstr);
+        if (selected.includes(dstr)) btn.classList.add("selected");
+      } else {
+        btn.classList.add("off");
+        btn.disabled = true;
+      }
+      td.appendChild(btn);
+      row.appendChild(td);
+      if (row.children.length === 7) { body.appendChild(row); row = document.createElement("tr"); }
+    }
+    if (row.children.length) body.appendChild(row);
+  }
+
+  function toggleDay(dstr) {
+    const warn = document.getElementById("wedRuleWarn");
+    const splitWarn = document.getElementById("splitWarn");
+    if (selected.includes(dstr)) {
+      selected = selected.filter(d => d !== dstr);
+      // verwijder nu eventueel "wees"-woensdagen: woensdagen die onder de 3 dagen van hun week zakken
+      const orphans = selected.filter(d => isWednesday(d) && weekCount(d, selected) < 3);
+      if (orphans.length) {
+        selected = selected.filter(d => !orphans.includes(d));
+        warn.style.display = "block";
+      } else if (selected.length === 0 || wednesdaysOk(selected)) {
+        warn.style.display = "none";
+      }
+      if (selected.length === 0) warn.style.display = "none";
+    } else {
+      if (isWednesday(dstr) && weekCount(dstr, selected) + 1 < 3) {
+        warn.style.display = "block"; // weiger woensdag als losse dag
+      } else {
+        const candidate = [...selected, dstr].sort();
+        if (!splitsOk(candidate)) {
+          splitWarn.style.display = "block"; // weiger dag: zou het blok onderbreken met een andere opname ertussen
+          return;
+        }
+        selected = candidate;
+        warn.style.display = "none";
+      }
+    }
+    splitWarn.style.display = splitsOk(selected) ? "none" : "block";
+    updateSelectionUI();
+    render();
+  }
+
+  function dayNote(d) {
+    const t = typeOf(d);
+    if (t === "half") return " <em>(halve dag — " + hoursOf(d) + ")</em>";
+    if (t === "restricted") return " <em>(beperkte dag — mogelijk tot ~15:00)</em>";
+    if (t === "wed3") return " <em>(09:00–17:00 — woensdag, geldig binnen uw 3-daagse blok)</em>";
+    if (t === "schoolfree") return " <em>(09:00–17:00 — schoolvrije dag, stemming aangeboden als optie)</em>";
+    return " <em>(09:00–17:00)</em>";
+  }
+
+  function updateSelectionUI() {
+    const box = document.getElementById("selectionBox");
+    document.getElementById("submitBtn").disabled =
+      selected.length === 0 || !wednesdaysOk(selected) || !splitsOk(selected);
+    if (selected.length === 0) {
+      box.innerHTML = "Nog geen dagen gekozen — klik links op een of meer gekleurde dagen.";
+      return;
+    }
+    const items = selected.map(d =>
+      "<li><strong>" + fmt(d) + "</strong>" + dayNote(d) + "</li>"
+    ).join("");
+    box.innerHTML = "Gekozen " + (selected.length === 1 ? "dag" : "dagen") +
+      ' <span style="font-size:0.78rem;color:var(--muted)">(klik een dag opnieuw om ze weg te halen)</span>' +
+      "<ul style='margin:6px 0 0;padding-left:18px'>" + items + "</ul>";
+  }
+
+  function changeMonth(dir) {
+    const next = new Date(cur.getFullYear(), cur.getMonth() + dir, 1);
+    if (next < minMonth || next > maxMonth) return;
+    cur = next;
+    render();
+  }
+
+  let pending = null;
+
+  function submitBooking(e) {
+    e.preventDefault();
+    if (!selected.length || !wednesdaysOk(selected) || !splitsOk(selected)) return;
+    const name = document.getElementById("f_name").value.trim();
+    const band = document.getElementById("f_band").value.trim();
+    const email = document.getElementById("f_email").value.trim();
+    const phone = document.getElementById("f_phone").value.trim();
+    const msg = document.getElementById("f_msg").value.trim();
+
+    const dayLines = selected.map(d => {
+      const t = typeOf(d);
+      const lbl = t === "half" ? "halve dag, " + hoursOf(d)
+        : t === "schoolfree" ? "SCHOOLVRIJE DAG (optie!) — 09:00-17:00"
+        : t === "restricted" ? "beperkte dag, mogelijk tot ~15:00"
+        : "09:00-17:00";
+      return "  - " + fmt(d) + " (" + lbl + ")";
+    }).join("\n");
+
+    const subject = "OPTIE Opnameboeking — " + selected.length + (selected.length === 1 ? " dag" : " dagen") + " — " + (band || name);
+    let body =
+      "Opnameboeking via de website\n" +
+      "===========================\n" +
+      "Gewenste dag" + (selected.length === 1 ? ":" : "en:") + "\n" + dayLines + "\n\n" +
+      "Naam: " + name + "\n" +
+      "Band/project: " + (band || "-") + "\n" +
+      "E-mail: " + email + "\n" +
+      "Telefoon: " + (phone || "-") + "\n\n" +
+      "Info:\n" + (msg || "-");
+
+    // ===== STAP 2: overzicht ("checkout") — daarna bevestigt de klant pas echt =====
+    if (STUDIO_CONFIG.webAppUrl) {
+      pending = { name, band, email, phone, msg, days: selected.slice().sort() };
+
+      const reviewItems = pending.days.map(d => {
+        const t = typeOf(d);
+        const lbl = t === "half" ? "halve dag, " + hoursOf(d)
+          : t === "schoolfree" ? "schoolvrije dag (als optie), 09:00–17:00"
+          : t === "restricted" ? "beperkte dag, tot ~15:00"
+          : t === "wed3" ? "woensdag (onderdeel van 3-daags blok), 09:00–17:00"
+          : "volledige dag, 09:00–17:00";
+        return "<li><strong>" + fmt(d) + "</strong> — " + lbl + "</li>";
+      }).join("");
+      document.getElementById("reviewDays").innerHTML = reviewItems;
+      document.getElementById("reviewContact").innerHTML =
+        "Naam: <strong>" + name + "</strong>" +
+        (band ? " · Band/project: <strong>" + band + "</strong>" : "") +
+        "<br>E-mail: " + email + (phone ? " · Telefoon: " + phone : "");
+      document.getElementById("bookForm").style.display = "none";
+      document.getElementById("reviewBox").style.display = "block";
+      document.getElementById("confirmBtn").disabled = false;
+      document.getElementById("confirmBtn").textContent = "Bevestig boeking";
+      return;
+    }
+
+    // Fallback: mailto wanneer webAppUrl nog leeg is
+    const toast = document.getElementById("toast");
+    const mailto = "mailto:" + STUDIO_CONFIG.bookingEmail +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
+    window.location.href = mailto;
+
+    toast.textContent = "Optie-aanvraag aangemaakt — verzend de e-mail die geopend wordt.";
+    toast.style.display = "block";
+    setTimeout(() => { toast.style.display = "none"; }, 6000);
+  }
+
+  function backToForm() {
+    document.getElementById("reviewBox").style.display = "none";
+    document.getElementById("bookForm").style.display = "block";
+    scrollTo(0, 0);
+  }
+
+  // ===== STAP 3: definitieve bevestiging — dit verstuurt de boeking pas =====
+  function confirmBooking() {
+    if (!pending) return;
+    const toast = document.getElementById("toast");
+    const btn = document.getElementById("confirmBtn");
+
+    const dayObjs = (pending.days || []).map(d => {
+      const t = typeOf(d);
+      const h = t === "half" ? hoursOf(d) : null; // bv. "09:00–13:30"
+      let start = "09:00", end = "17:00";
+      if (h) { const p = h.split(/[–-]/); if (p.length === 2) { start = p[0]; end = p[1]; } }
+      else if (t === "restricted") { end = "15:00"; }
+      return {
+        date: d,
+        start: start, end: end,
+        note: t === "schoolfree" ? "SCHOOLVRIJE DAG (aangevraagd als optie)"
+              : t === "restricted" ? "beperkte dag" : (t === "wed3" ? "woensdag in 3-daags blok" : "")
+      };
+    });
+    const params = new URLSearchParams();
+    params.append("name", pending.name); params.append("band", pending.band);
+    params.append("email", pending.email); params.append("phone", pending.phone);
+    params.append("msg", pending.msg || "-");
+    params.append("days", JSON.stringify(dayObjs));
+
+    btn.disabled = true; btn.textContent = "Versturen…";
+    fetch(STUDIO_CONFIG.webAppUrl, { method: "POST", body: params })
+      .then(r => r.json())
+      .then(res => {
+        const email = pending.email;
+        if (res.ok) {
+          const label = d => { const dt = new Date(d + "T12:00:00"); return dt.toLocaleDateString("nl-BE", { weekday: "long", day: "numeric", month: "long", year: "numeric" }); };
+          document.getElementById("confirmDays").innerHTML = res.created.map(d => "<li>" + label(d) + "</li>").join("");
+          document.getElementById("confirmEmail").textContent = email;
+          document.getElementById("reviewBox").style.display = "none";
+          document.getElementById("confirmBox").style.display = "block";
+          toast.textContent = "Boeking ontvangen — de dagen staan in de agenda als optie.";
+          toast.style.display = "block";
+          pending = null;
+          selected.length = 0; render();
+        } else if (res.conflicts && res.conflicts.length) {
+          const cLabel = d => { const dt = new Date(d + "T12:00:00"); return dt.toLocaleDateString("nl-BE", { day: "numeric", month: "long", year: "numeric" }); };
+          toast.textContent = "Sorry — deze dag(en) zijn net geboekt: " + res.conflicts.map(cLabel).join(", ") + ". Kies andere dagen in de kalender.";
+          toast.style.display = "block";
+          document.getElementById("reviewBox").style.display = "none";
+          selected.length = 0; render();
+          pending = null;
+        } else {
+          toast.textContent = "Kon niet versturen (" + (res.errors && res.errors[0] || "onbekende fout") + ") — mail jeroen@studiotrad.be";
+          toast.style.display = "block";
+          btn.disabled = false; btn.textContent = "Bevestig boeking";
+        }
+        setTimeout(() => { toast.style.display = "none"; }, 8000);
+      })
+      .catch(() => {
+        toast.textContent = "Verbinding met de studio mislukt — mail " + STUDIO_CONFIG.bookingEmail;
+        toast.style.display = "block";
+        btn.disabled = false; btn.textContent = "Bevestig boeking";
+        setTimeout(() => { toast.style.display = "none"; }, 8000);
+      });
+  }
+
+  render();
+
+  // ===== LIVE BESCHIKBAARHEID =====
+  // haalt de verse, door de studio berekende beschikbaarheid op (regel-gebaseerd,
+  // 2x per dag ververst). De ingebakken fallback hierboven geldt alleen als dit mislukt.
+  fetch("availability.json?t=" + Date.now())
+    .then(r => r.json())
+    .then(data => {
+      Object.assign(STUDIO_CONFIG, data);
+      rebuildConfig();
+      selected = selected.filter(d => dayInfo(d));
+      updateSelectionUI();
+      render();
+    })
+    .catch(() => {});
+</script>
+</body>
+</html>
