@@ -124,6 +124,7 @@
         <input id="f_phone" type="tel" />
         <label for="f_msg">Waarover nemen we op? (bezetting, aantal nummers, timing…)</label>
         <textarea id="f_msg"></textarea>
+        <input id="f_website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;top:0;height:0;width:0;opacity:0" />
         <button class="btn" id="submitBtn" type="submit" disabled>Naar overzicht →</button>
       </form>
       <div id="reviewBox" class="card" style="display:none;margin-top:14px">
@@ -323,6 +324,13 @@
       }
       if (selected.length === 0) warn.style.display = "none";
     } else {
+      if (selected.length >= MAX_BOOKING_DAYS) {
+        const t = document.getElementById("toast");
+        t.textContent = "Maximaal " + MAX_BOOKING_DAYS + " dagen per online boeking — kies een dag weg om een andere toe te voegen. Langere opnames? Mail " + STUDIO_CONFIG.bookingEmail + ".";
+        t.style.display = "block";
+        setTimeout(() => { t.style.display = "none"; }, 8000);
+        return;
+      }
       if (isWednesday(dstr) && weekCount(dstr, selected) + 1 < 3) {
         warn.style.display = "block"; // weiger woensdag als losse dag
       } else {
@@ -374,9 +382,28 @@
 
   let pending = null;
 
+  const MAX_BOOKING_DAYS = 7; // harde limiet per boeking (client én server)
+
   function submitBooking(e) {
     e.preventDefault();
     if (!selected.length || !wednesdaysOk(selected) || !splitsOk(selected)) return;
+    const toast = document.getElementById("toast");
+
+    // honeypot: onzichtbaar veld dat mensen nooit invullen — bots wel
+    const hp = document.getElementById("f_website").value.trim();
+    if (hp) {
+      toast.textContent = "Er ging iets mis bij het verwerken — ververs de pagina en probeer het opnieuw.";
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 8000);
+      return;
+    }
+    // limiet: maximaal 7 dagen per boeking
+    if (selected.length > MAX_BOOKING_DAYS) {
+      toast.textContent = "Maximaal " + MAX_BOOKING_DAYS + " dagen per online boeking. Voor langere opnames: mail " + STUDIO_CONFIG.bookingEmail + ".";
+      toast.style.display = "block";
+      setTimeout(() => { toast.style.display = "none"; }, 8000);
+      return;
+    }
     const name = document.getElementById("f_name").value.trim();
     const band = document.getElementById("f_band").value.trim();
     const email = document.getElementById("f_email").value.trim();
@@ -429,7 +456,6 @@
     }
 
     // Fallback: mailto wanneer webAppUrl nog leeg is
-    const toast = document.getElementById("toast");
     const mailto = "mailto:" + STUDIO_CONFIG.bookingEmail +
       "?subject=" + encodeURIComponent(subject) +
       "&body=" + encodeURIComponent(body);
@@ -469,6 +495,7 @@
     params.append("name", pending.name); params.append("band", pending.band);
     params.append("email", pending.email); params.append("phone", pending.phone);
     params.append("msg", pending.msg || "-");
+    params.append("website", (document.getElementById("f_website").value || "").trim());
     params.append("days", JSON.stringify(dayObjs));
 
     btn.disabled = true; btn.textContent = "Versturen…";
